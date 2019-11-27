@@ -7,6 +7,9 @@ const merge = require("lodash.merge");
 const TARGET_NODE = process.env.WEBPACK_TARGET === "node";
 const target = TARGET_NODE ? "server" : "client";
 
+// const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const isProduction = process.env.NODE_ENV === "production";
+
 module.exports = {
   css: {
     extract: false
@@ -33,9 +36,23 @@ module.exports = {
     optimization: {
       splitChunks: TARGET_NODE ? false : undefined
     },
+    module: {
+      rules: [
+        {
+          test: /\.vue$/,
+          loader: "vue-loader",
+          options: {
+            extractCSS: isProduction
+          }
+        }
+      ]
+    },
     // 这是将服务器的整个输出构建为单个JSON文件的插件
     // 服务端默认文件名为 `vue-ssr-server-bundle.json`
     plugins: [TARGET_NODE ? new VueSSRServerPlugin() : new VueSSRClientPlugin()]
+    // isProduction
+    //   ? [new ExtractTextPlugin({ filename: "common.[chunkhash].css" })]
+    //   : []
   }),
   chainWebpack: config => {
     config.module
